@@ -1,0 +1,30 @@
+# This defines a "Customer" type that represents our data.
+# It has two fields: "id" (unique identifier) and "name" (customer's name).
+type Customer {
+    id: ID!           # "!" means this field cannot be null
+    name: String!     # Customer's name, also cannot be null
+}
+
+# This defines the "Query" type.
+# Query is used to fetch data (like GET in REST).
+type Query {
+    # This field returns a list of all customers.
+    # [Customer!]! means: a non-null list of non-null customers
+    customers: [Customer!]!
+}
+
+# This defines the "Mutation" type.
+# Mutation is used to modify or add data (like POST/PUT in REST).
+type Mutation {
+    # This field lets us add a new customer by passing their name.
+    # It returns the added customer back as a response.
+    addCustomer(name: String!): Customer!
+}
+
+# This defines the "Subscription" type.
+# Subscription is used for real-time updates using WebSocket.
+type Subscription {
+    # This field will notify the client whenever a new customer is added.
+    # It returns the added Customer in real-time to subscribed clients.
+    customerAdded: Customer!
+}

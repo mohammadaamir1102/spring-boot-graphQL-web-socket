@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Customer List</title>
+    <script src="https://unpkg.com/graphql-ws/umd/graphql-ws.min.js"></script>
+</head>
+<body>
+<h1>Customers</h1>
+<ul id="customer-list">
+    <li th:each="cust : ${customersData}" th:text="${cust.name}"></li>
+</ul>
+
+<script>
+
+    /**
+    * This line selects the <ul> element so we can dynamically add <li> elements to it later.
+    */
+
+
+   const list = document.getElementById('customer-list');
+
+
+    /**
+     * We initialize a WebSocket GraphQL client using the graphql-ws library.
+     *
+     * The 'url' is the WebSocket endpoint which matches:
+     * spring.graphql.websocket.path=/graphql
+     *
+     * 'ws://' means it's a WebSocket protocol, not HTTP.
+     */
+
+   const client = graphqlWs.createClient({
+       url: 'ws://localhost:8080/graphql',
+   });
+
+
+    /**
+     * Here we subscribe to a GraphQL subscription query.
+     * This listens for real-time events from the backend.
+     *
+     * The query:
+     * subscription { customerAdded { id name } }
+     * means whenever a new customer is added, the server pushes it here.
+     */
+
+
+   client.subscribe(
+       {
+           query: `subscription { customerAdded { id name } }`,
+       },
+       {
+           /**
+             * 'next' is called every time a new customer is pushed from the server.
+             * We create a new <li> and append it to the <ul> to update UI without refresh.
+             */
+
+           next: ({ data }) => {
+               const li = document.createElement('li');
+               li.textContent = data.customerAdded.name;
+               list.appendChild(li);
+           },
+
+             /**
+             * Called when there’s an error in the WebSocket or subscription.
+             */
+
+           error: (err) => console.error(err),
+
+           /**
+             * Called when the subscription is completed/closed.
+             */
+           complete: () => console.log("Subscription completed"),
+       }
+   );
+</script>
+</body>
+</html>

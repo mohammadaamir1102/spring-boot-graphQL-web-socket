@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Customer List</title>
+    <script src="https://unpkg.com/graphql-ws/umd/graphql-ws.min.js"></script>
+</head>
+<body>
+<h1>Customers</h1>
+<ul id="customer-list">
+    <li th:each="cust : ${otherCustomersData}" th:text="${cust.name}"></li>
+</ul>
+
+<script>
+    const list = document.getElementById('customer-list');
+
+    const client = graphqlWs.createClient({
+        url: 'ws://localhost:8080/graphql',
+    });
+
+    client.subscribe(
+        {
+            query: `subscription { customerAdded { id name } }`,
+        },
+        {
+            next: ({ data }) => {
+                const li = document.createElement('li');
+                li.textContent = data.customerAdded.name;
+                list.appendChild(li);
+            },
+            error: (err) => console.error(err),
+            complete: () => console.log("Subscription completed"),
+        }
+    );
+</script>
+</body>
+</html>
